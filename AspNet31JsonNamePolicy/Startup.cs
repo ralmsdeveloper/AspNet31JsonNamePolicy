@@ -10,22 +10,22 @@ using Microsoft.Extensions.Hosting;
 
 namespace AspNet31JsonNamePolicy
 {
-public class CustomPropertyNamingPolicy : JsonNamingPolicy
-{
-    public override string ConvertName(string name) => ToSnakeCase(name);
-
-    private static string ToSnakeCase(string name)
+    public class CustomPropertyNamingPolicy : JsonNamingPolicy
     {
-        return string.IsNullOrWhiteSpace(name)
-            ? name
-            : Regex.Replace(
-                name,
-                @"([a-z0-9])([A-Z])",
-                "$1_$2",
-                RegexOptions.Compiled,
-                TimeSpan.FromSeconds(0.2)).ToLower();
+        public override string ConvertName(string name) => ToSnakeCase(name);
+
+        private static string ToSnakeCase(string name)
+        {
+            return string.IsNullOrWhiteSpace(name)
+                ? name
+                : Regex.Replace(
+                    name,
+                    @"([a-z0-9])([A-Z])",
+                    "$1_$2",
+                    RegexOptions.Compiled,
+                    TimeSpan.FromSeconds(0.2)).ToLower();
+        }
     }
-}
 
     public class Startup
     {
@@ -36,17 +36,17 @@ public class CustomPropertyNamingPolicy : JsonNamingPolicy
 
         public IConfiguration Configuration { get; }
 
-public void ConfigureServices(IServiceCollection services)
-{
-    services.AddControllers().AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        options.JsonSerializerOptions.IgnoreNullValues = true;
-        options.JsonSerializerOptions.WriteIndented = false;
-        options.JsonSerializerOptions.AllowTrailingCommas = false;
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    });
-}
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = new CustomPropertyNamingPolicy();
+                options.JsonSerializerOptions.IgnoreNullValues = true;
+                options.JsonSerializerOptions.WriteIndented = false;
+                options.JsonSerializerOptions.AllowTrailingCommas = false;
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
+        }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -62,7 +62,7 @@ public void ConfigureServices(IServiceCollection services)
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-            }); 
+            });
         }
     }
 }
